@@ -18,14 +18,6 @@ export const Category = sequelize.define('Category', {
     },
     comment: 'Nombre de la categoría'
   },
-  color: {
-    type: DataTypes.STRING(7),
-    defaultValue: '#3498db',
-    validate: {
-      is: /^#[0-9A-F]{6}$/i
-    },
-    comment: 'Color en formato HEX (#RRGGBB)'
-  },
   icon: {
     type: DataTypes.STRING(50),
     defaultValue: 'folder',

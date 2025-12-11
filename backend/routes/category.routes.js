@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { CategoryService } from "../services/category.service.js";
 import { CategoryControllers } from "../controllers/category.controller.js";
+import { validationsCreateCategory } from "../middlewares/categoryMiddlewares.js";
 
 export const createCategoryRoutes = () => {
     const router = Router();
@@ -8,14 +9,11 @@ export const createCategoryRoutes = () => {
     const categoryService = new CategoryService();
     const categoryController = new CategoryControllers(categoryService)
 
-   /* //Crear categoria
-    router.post('/',( req ,res ) => categoryController.createCategoryController(req,res));
+    //Crear categoria
+    router.post('/',validationsCreateCategory,( req ,res ) => categoryController.createCategoryController(req,res));
 
-    //obtener categorias
-    router.get('/')
-    
     //Eliminar categoria
-    router.delete('/')
-*/
+    router.delete('/:name',( req ,res ) => categoryController.deleteCategoryController(req,res));
+
     return router;
 }

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { TaskService } from "../services/task.service.js";
 import { TaskControllers } from "../controllers/task.controller.js";
+import { validateTaskStartTime } from "../middlewares/taskMiddlewares.js";
 
 export const createTaskRoutes = () => {
     const router = Router();
@@ -9,7 +10,7 @@ export const createTaskRoutes = () => {
     const taskControllers = new TaskControllers( taskService );
 
     //craer una tarea 
-    router.post('/',(req ,res) => taskControllers.createTaskController(req,res));
+    router.post('/',validateTaskStartTime,(req ,res) => taskControllers.createTaskController(req,res));
 
     //obtener todas las tareas (se puede filtar)
     router.get('/',(req,res) => taskControllers.getTasksAllController(req,res));
