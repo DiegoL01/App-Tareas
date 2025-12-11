@@ -1,4 +1,13 @@
 # Welcome to your Expo app 👋
+//ip de laptop para hacer fetch desde expo go : 192.168.106.197
+ejemplo : const res = await fetch("http://192.168.106.197:3000/api/auth/login", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ email, password }),
+});
+
+
+
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 

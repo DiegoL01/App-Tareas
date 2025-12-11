@@ -29,17 +29,17 @@ export async function inicializarModelos() {
     console.log("✅ Todas las relaciones configuradas");
 
     // 3. Sincronizar modelos con la base de datos (solo en desarrollo)
-  /*  const environment = process.env.NODE_ENV || "development";
-    console.log("🔍 Entorno detectado:", environment);
-
-   if (environment === "development") {
-      await sequelize.sync({ alter: true });
+    /*const environment = process.env.NODE_ENV || "development";
+    
+    await sequelize.sync({ alter: true });
+    if (environment === "development") {
+      console.log("🔍 Entorno detectado:", environment);
       console.log("✅ Modelos sincronizados (alter)");
     } else if (environment === "test") {
       await sequelize.sync({ force: true });
       console.log("✅ Modelos sincronizados (force) para testing");
-    }
-*/
+    }*/
+
     return modelos;
   } catch (error) {
     console.error("❌ Error al inicializar modelos:", error);
