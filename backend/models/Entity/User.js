@@ -60,7 +60,6 @@ export const User = sequelize.define('User', {
   }
 });
 
-// Métodos de instancia
 User.prototype.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
@@ -73,43 +72,20 @@ User.prototype.toJSON = function() {
   return values;
 };
 
-// 2. Función para configurar relaciones
 export async function configurarRelacionesUser() {
-  // Importación dinámica de los modelos relacionados
   const { Category } = await import('./Category.js');
   const { Task } = await import('./Task.js');
-  const { WorkSession } = await import('./WorkSession.js');
-  
-  // User tiene muchas Categories
+
   User.hasMany(Category, {
     foreignKey: 'user_id',
     as: 'categories',
     onDelete: 'CASCADE'
   });
   
-  // User tiene muchas Tasks
   User.hasMany(Task, {
     foreignKey: 'user_id',
     as: 'tasks',
     onDelete: 'CASCADE'
   });
-  
-  // Hook para crear categorías por defecto
-  User.afterCreate(async (user) => {
-    const defaultCategories = [
-      { name: '💼 Trabajo', color: '#3498db', icon: 'briefcase', is_default: true },
-      { name: '🏋️ Ejercicio', color: '#e74c3c', icon: 'dumbbell', is_default: true },
-      { name: '📚 Estudio', color: '#2ecc71', icon: 'book', is_default: true },
-      { name: '👨‍👩‍👧 Familiar', color: '#f1c40f', icon: 'home', is_default: true },
-      { name: '😎 Ocio', color: '#9b59b6', icon: 'gamepad', is_default: true },
-      { name: '🧘 Mindfulness', color: '#1abc9c', icon: 'brain', is_default: true }
-    ];
-    
-    await Category.bulkCreate(
-      defaultCategories.map(cat => ({
-        ...cat,
-        user_id: user.id
-      }))
-    );
-  });
+
 }

@@ -15,7 +15,5 @@ export const createRoutes = () => {
     router.use('/category',verifyToken);
     router.use('/category',createCategoryRoutes());
     
-    
-
     return router;
 }
