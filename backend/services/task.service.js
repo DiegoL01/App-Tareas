@@ -1,0 +1,207 @@
+// services/task.service.js
+import { Task } from "../models/Entity/Task.js";
+
+export class TaskService {
+  async createTaskService(req) {
+    try {
+      const { title, description, start_time, category_id } = req.body;
+
+      const task = await Task.create({
+        title: title,
+        description: description || null,
+        start_time: start_time || new Date(),
+        user_id: req.userId,
+        category_id: category_id || null,
+        status: "active",
+      });
+
+      return {
+        statusCode: 201,
+        message: "Tarea añadida",
+        result: task,
+      };
+    } catch (error) {
+      return {
+        statusCode: 500,
+        message: "No se pudo agregar la tarea",
+        error: error.message,
+      };
+    }
+  }
+
+  async getTasksAllService(req) {
+    try {
+      const filters = req.query;
+
+      const whereClause = {};
+
+      whereClause.user_id = req.userId;
+
+
+      // Aplicar filtros si existen
+      if (filters.status) {
+        whereClause.status = filters.status;
+      }
+
+      if (filters.category_id) {
+        whereClause.category_id = Number(filters.category_id);
+      }
+
+      const tasks = await Task.findAll({
+        where: whereClause,
+        order: [["created_at", "DESC"]],
+        include: [
+          {
+            association: "category",
+            attributes: ["id", "name", "color"],
+          },
+        ],
+      });
+
+      return {
+        statusCode: 200,
+        message: "Tareas obtenidas exitosamente",
+        result: tasks,
+      };
+    } catch (error) {
+      return {
+        statusCode: 500,
+        message: "Error al obtener las tareas",
+        error: error.message,
+      };
+    }
+  }
+
+  async getTaskByIdService(req) {
+    try {
+      const { taskId } = req.params;
+      const user_id = req.userId;
+
+      const task = await Task.findOne({
+        where: {
+          id: taskId,
+          user_id: user_id,
+        },
+        include: [
+          {
+            association: "category",
+            attributes: ["id", "name", "color"],
+          },
+          {
+            association: "work_sessions",
+            attributes: ["id", "start_time", "end_time", "duration"],
+            order: [["start_time", "DESC"]],
+          },
+        ],
+      });
+
+      if (!task) {
+        return {
+          statusCode: 404,
+          message: "Tarea no encontrada",
+          result: null,
+        };
+      }
+
+      return {
+        statusCode: 200,
+        message: "Tarea obtenida exitosamente",
+        result: task,
+      };
+    } catch (error) {
+      return {
+        statusCode: 500,
+        message: "Error al obtener la tarea",
+        error: error.message,
+      };
+    }
+  }
+
+  async updateTaskService(req) {
+    try {
+      const updateData = req.body;
+      const user_id = req.userId;
+      const { taskId } = req.params;
+
+      const task = await Task.findOne({
+        where: {
+          id: taskId,
+          user_id: user_id,
+        },
+      });
+
+      if (!task) {
+        return {
+          statusCode: 404,
+          message: "Tarea no encontrada",
+          result: null,
+        };
+      }
+
+      // Validar que end_time sea después de start_time si ambos están presentes
+      if (
+        updateData.end_time &&
+        task.start_time &&
+        new Date(updateData.end_time) <= new Date(task.start_time)
+      ) {
+        return {
+          statusCode: 400,
+          message:
+            "La fecha de finalización debe ser después de la fecha de inicio",
+          result: null,
+        };
+      }
+
+      // Actualizar la tarea
+      await task.update(updateData);
+
+      return {
+        statusCode: 200,
+        message: "Tarea actualizada exitosamente",
+        result: task,
+      };
+    } catch (error) {
+      return {
+        statusCode: 500,
+        message: "Error al actualizar la tarea",
+        error: error.message,
+      };
+    }
+  }
+
+  async deleteTaskService(req) {
+    try {
+      const { taskId } = req.params;
+      const user_id = req.userId;
+
+      const task = await Task.findOne({
+        where: {
+          id: taskId,
+          user_id: user_id,
+        },
+      });
+
+      if (!task) {
+        return {
+          statusCode: 404,
+          message: "Tarea no encontrada",
+          result: null,
+        };
+      }
+
+      await task.destroy();
+
+      return {
+        statusCode: 200,
+        message: "Tarea eliminada exitosamente",
+        result: { id: taskId },
+      };
+    } catch (error) {
+      return {
+        statusCode: 500,
+        message: "Error al eliminar la tarea",
+        error: error.message,
+      };
+    }
+  }
+}

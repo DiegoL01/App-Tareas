@@ -35,6 +35,9 @@ export class AuthService {
     try {
       const user = await User.findOne({ where: { email: email } });
 
+      console.log(user.id)
+      console.log(user.id)
+      console.log(user.id)
       if (!user)
         return {
           success: false,
@@ -50,7 +53,7 @@ export class AuthService {
             success: true,
             result: user,
             statusCode: 200,
-            token: createToken(user.email),
+            token: createToken(user.id),
           }
         : {
             success: false,

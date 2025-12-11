@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import { globalEnv } from "../config/configEnv.js";
 
 export const createToken = ( gmail ) => {
+    
     const secretKey = globalEnv.KEY_JWT;
 
     if (!secretKey) {

@@ -1,7 +1,7 @@
 import express from "express";
 import { createRoutes } from "../../routes/index.js";
 import { inicializarModelos } from "../Entity/index.js";
-
+import cors from 'cors';
 export class ServerClass {
   constructor() {
     this.app = express();
@@ -12,11 +12,12 @@ export class ServerClass {
   }
 
   ConfigureMiddleware() {
-    this.app.use(express.json()); // Para parsear JSON en las requests
+    this.app.use(express.json()); 
+    this.app.use(cors());
   }
 
   ConfigureRoutes() {
-    this.app.use("/api", createRoutes()); // Monta las rutas bajo /api
+    this.app.use("/api", createRoutes());
   }
 
   initDB() {
@@ -24,7 +25,7 @@ export class ServerClass {
   }
 
   start() {
-    this.app.listen(this.port, () => {
+    this.app.listen(this.port,'0.0.0.0',() => {
       console.log(`Servidor corriendo en http://localhost:${this.port}`);
     });
   }

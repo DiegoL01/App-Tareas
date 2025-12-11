@@ -22,7 +22,9 @@ export const verifyToken = ( req, res, next ) => {
     try {
         const token = req.header('token');
         const payload = jwt.verify(token,globalEnv.KEY_JWT);
-        req.email = payload.email;
+  
+        req.userId = payload.gmail;
+
         return next()
     } catch (error) {
         return res.status(403).json({
@@ -32,6 +34,7 @@ export const verifyToken = ( req, res, next ) => {
         })
     }
 }
+
 
 
 export const validationRegister = [
