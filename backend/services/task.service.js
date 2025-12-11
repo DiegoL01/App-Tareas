@@ -1,18 +1,32 @@
 // services/task.service.js
+import { Category } from "../models/Entity/Category.js";
 import { Task } from "../models/Entity/Task.js";
 
 export class TaskService {
   async createTaskService(req) {
     try {
-      const { title, description, start_time, category_id } = req.body;
+      const { title, description, category_id } = req.body;
+      const userId = req.userId;
+      
+      const category = await Category.findOne({
+        where: {
+          user_id: userId,
+          id: category_id,
+        },
+      });
+      
+      if (!category) {
+        return {
+          statusCode: 400,
+          message: "Esta categoria no existe",
+        };
+      }
 
       const task = await Task.create({
         title: title,
         description: description || null,
-        start_time: start_time || new Date(),
         user_id: req.userId,
         category_id: category_id || null,
-        status: "active",
       });
 
       return {
@@ -36,7 +50,6 @@ export class TaskService {
       const whereClause = {};
 
       whereClause.user_id = req.userId;
-
 
       // Aplicar filtros si existen
       if (filters.status) {
@@ -85,13 +98,8 @@ export class TaskService {
         include: [
           {
             association: "category",
-            attributes: ["id", "name", "color"],
-          },
-          {
-            association: "work_sessions",
-            attributes: ["id", "start_time", "end_time", "duration"],
-            order: [["start_time", "DESC"]],
-          },
+            attributes: ["id", "name"],
+          }
         ],
       });
 

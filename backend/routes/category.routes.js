@@ -9,10 +9,8 @@ export const createCategoryRoutes = () => {
     const categoryService = new CategoryService();
     const categoryController = new CategoryControllers(categoryService)
 
-    //Crear categoria
     router.post('/',validationsCreateCategory,( req ,res ) => categoryController.createCategoryController(req,res));
 
-    //Eliminar categoria
     router.delete('/:name',( req ,res ) => categoryController.deleteCategoryController(req,res));
 
     return router;
