@@ -1,10 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, ActivityIndicator, StyleSheet } from "react-native";
+import { View, Text, TextInput, Button, ActivityIndicator, StyleSheet , Image} from "react-native";
 import { useAuth } from "../../src/hooks/useAuth";
+import {useRouter} from "expo-router";
+
 
 const Login = () => {
   const { login, state: { loading, error } } = useAuth();
-
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -16,8 +18,10 @@ const Login = () => {
 
   return (
     <View style={styles.container}>
+     <View style={styles.imageContainer}>
+      <Image source={require('../../assets/task/icon.png')} style={styles.image} />
       <Text style={styles.title}>Iniciar sesión</Text>
-
+      </View>
       <TextInput
         placeholder="Email"
         value={email}
@@ -42,6 +46,17 @@ const Login = () => {
       ) : (
         <Button title="Ingresar" onPress={handleSubmit} />
       )}
+      <View style={{ marginTop: 20 }}>
+        <Text>
+          ¿No tienes una cuenta?{" "}
+          <Text
+            style={{ color: "blue" }}
+            onPress={() => router.push("/(auth)/Register")}
+          >
+            Regístrate
+          </Text>
+        </Text>
+      </View>
     </View>
   );
 }
@@ -52,12 +67,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 25,
     gap: 15,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 20,
+    marginTop:-80,
   },
   input: {
     borderWidth: 1,
@@ -71,5 +81,24 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 10,
   },
+  imageContainer: {
+    flexDirection: 'column', // Alinea los elementos horizontalmente
+    alignItems: 'center', // Centra verticalmente imagen y texto
+    justifyContent: 'flex-start', // Alinea al inicio (puedes cambiarlo a 'center' si quieres centrado)
+    padding: 10,
+    marginTop: -60,
+    // marginBottom: 20,
+  },
+  image: {
+    width: 150,
+    height: 150,
+    borderRadius: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+
 });
 export default Login;

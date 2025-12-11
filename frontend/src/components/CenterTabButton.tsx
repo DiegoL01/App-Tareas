@@ -2,9 +2,8 @@ import React from 'react';
 import { TouchableOpacity, View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 //type CenterTabButtonProps 
-import type { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
-type Props = BottomTabBarButtonProps;
 import { useRouter } from 'expo-router';
+
 const CenterTabButton = () => {
    const router = useRouter();
     const handlePress = () => {

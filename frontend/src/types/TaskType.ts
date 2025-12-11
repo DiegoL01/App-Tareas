@@ -7,5 +7,6 @@ export type Task = {
     // Tiempo acumulado en ms antes de la última pause/resume
     tiempoPausa?: number;
     completed?: boolean;
+    lastSessionTime?: number;
 
 }

@@ -63,7 +63,7 @@ const router = useRouter();
       
         <TouchableOpacity
           onPress={() => {
-            router.back();
+            router.push("/(tabs)/Home");
           }}
           className="bg-gray-300 py-3 rounded"
         >

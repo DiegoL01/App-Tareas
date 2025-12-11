@@ -5,16 +5,14 @@ import CenterTabButton from "../../src/components/CenterTabButton";
 import { Text , Button } from "react-native";
 import { useAuth } from "@/src/hooks/useAuth";
 import { BackButton } from "@/src/components/BackButton";
-function logout() {
-    const { logout } = useAuth();
-    logout();
-}
+
 
 export default function Layout() {
+    const { logout,state:{user:name} } = useAuth();
     return (
         <Tabs
             screenOptions={(navigation)=>({
-                headerTitle:()=><Text>Hola Diego</Text>,
+                headerTitle:()=><Text style={{color: "#000", fontWeight: "bold"}}>Hola {name?.name}</Text>,
                 headerRight: () => <Button  title="Cerrar Sesión"  onPress={logout}/>,
                 headerLeft: () => <BackButton />,
                 headerStyle: {

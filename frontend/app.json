@@ -12,12 +12,13 @@
     "slug": "AppTask",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/task/icon.png",
     "scheme": "apptask",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.AppTask"
     },
     "android": {
       "adaptiveIcon": {
@@ -33,7 +34,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/task/icon.png"
     },
     "plugins": [
       "expo-router",

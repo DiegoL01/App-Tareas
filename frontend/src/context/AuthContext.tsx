@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer } from "react";
+import { createContext, useReducer } from "react";
 
 type User = {
   id: number;
@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     dispatch({ type: "SET_LOADING", payload: true });
 
     try {
-      const res = await fetch("http://localhost:3000/api/auth/login", {
+      const res = await fetch("http://192.168.106.197:3000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -102,7 +102,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     dispatch({ type: "SET_LOADING", payload: true });
 
     try {
-      const res = await fetch("http://localhost:3000/api/auth/register", {
+      const res = await fetch("http://192.168.106.197:3000/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
@@ -113,11 +113,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!data.success) {
         throw new Error(data.message || "Error al registrarse");
       }
-
-      dispatch({
-        type: "REGISTER_SUCCESS",
-        payload: data.result,
-      });
+      await login(email, password);
+      // dispatch({
+      //   type: "REGISTER_SUCCESS",
+      //   payload: data.result,
+      // });
     } catch (error: any) {
       dispatch({ type: "SET_ERROR", payload: error.message });
     }
