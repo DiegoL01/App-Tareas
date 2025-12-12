@@ -146,22 +146,12 @@ export class TaskService {
         };
       }
 
-      // Validar que end_time sea después de start_time si ambos están presentes
-      if (
-        updateData.end_time &&
-        task.start_time &&
-        new Date(updateData.end_time) <= new Date(task.start_time)
-      ) {
-        return {
-          statusCode: 400,
-          message:
-            "La fecha de finalización debe ser después de la fecha de inicio",
-          result: null,
-        };
-      }
+      console.log(updateData);
 
       // Actualizar la tarea
       await task.update(updateData);
+
+      console.log(task)
 
       return {
         statusCode: 200,

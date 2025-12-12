@@ -12,8 +12,7 @@ export default function TaskDetail() {
 
   return (
     <View className=" flex-1 p-4 flex-col flex pt-30 bg-gray-100">
-      {/* Botón doble sencillo */}
-      <View className="absolute top-4 right-4 z-10 flex-row bg-white rounded-lg shadow overflow-hidden">
+      <View className="absolute top-20 right-4 z-10 flex-row bg-white rounded-lg shadow overflow-hidden">
         <Pressable
           onPress={() => setIsRead(true)}
           className={`px-4 py-2 ${isRead ? "bg-blue-600" : "bg-gray-200"}`}

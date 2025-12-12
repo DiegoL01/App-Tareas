@@ -33,7 +33,7 @@ const initialState: AuthState = {
   user: null,
   token: null,
   loading: false,
-  initializing: true, // Empieza como true para cargar el token guardado
+  initializing: true, // Comienza en true hasta que se cargue el token
   error: null,
 };
 
@@ -44,7 +44,7 @@ export const AuthContext = createContext<{
   logout: () => Promise<void>;
 } | null>(null);
 
-//-------------------- REDUCER --------------------
+//--------REDUCER
 function authReducer(state: AuthState, action: Action): AuthState {
   switch (action.type) {
     case "SET_LOADING":
@@ -91,11 +91,10 @@ function authReducer(state: AuthState, action: Action): AuthState {
   }
 }
 
-// -------------------- PROVIDER --------------------
+// ----------PROVIDER 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Cargar token y usuario guardados al iniciar la app
   useEffect(() => {
     loadStoredAuth();
   }, []);
@@ -134,7 +133,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Eliminar token y usuario de AsyncStorage
   const clearAuthData = async () => {
     try {
       await Promise.all([
@@ -148,70 +146,79 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // accione saisncronas para el login y el registro
 
-  const login = async (email: string, password: string) => {
+const login = async (email: string, password: string) => {
+    const API_URL = "http://192.168.106.197:3000/api/auth/login"; 
+    
     dispatch({ type: "SET_LOADING", payload: true });
     dispatch({ type: "SET_ERROR", payload: null });
 
     try {
-      const res = await fetch("http://localhost:3000/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+        const res = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+        });
 
-      // Verificar si la respuesta es OK antes de parsear JSON
-      if (!res.ok) {
-        // Intentar obtener el mensaje de error del servidor
-        let errorMessage = `Error ${res.status}: ${res.statusText}`;
-        try {
-          const errorData = await res.json();
-          errorMessage = errorData.message || errorMessage;
-        } catch {
-          throw new Error("Error al iniciar sesión");
+        if (!res.ok) {
+            let errorData;
+            let errorMessage = "Error de conexión con el servidor.";
+
+            try {
+                errorData = await res.json(); 
+                
+                errorMessage = errorData.message || errorMessage; 
+                
+                if (errorData.statusCode >= 500) {
+                    errorMessage = `Error del servidor `;
+                }
+                 if (errorData.statusCode >= 400 && errorData.statusCode < 500) {
+                    errorMessage = `CREDENCIALES INVALIDAS: Por favor verifica tu email y contraseña.`;
+                }
+
+            } catch (e) {
+                errorMessage = `Error ${res.status}: Respuesta del servidor no válida.`;
+            }
+            
+            throw new Error(errorMessage);
         }
-      }
 
-      const data = await res.json();
+        const data = await res.json();
+        
+        if (data.success === false) {
+             throw new Error(data.message || "Error de credenciales (backend).");
+        }
+        
+        if (!data.result || !data.token) {
+            throw new Error("Respuesta de éxito del servidor incompleta (faltan user o token).");
+        }
 
-      if (!data.success) {
-        throw new Error(data.message || "Error al iniciar sesión");
-      }
+        await saveAuthData(data.result, data.token);
 
-      if (!data.result || !data.token) {
-        throw new Error("Respuesta del servidor inválida");
-      }
+        dispatch({
+            type: "LOGIN_SUCCESS",
+            payload: { user: data.result, token: data.token },
+        });
 
-      // Guardar en AsyncStorage
-      await saveAuthData(data.result, data.token);
-
-      dispatch({
-        type: "LOGIN_SUCCESS",
-        payload: { user: data.result, token: data.token },
-      });
     } catch (error: any) {
-      // Manejar diferentes tipos de errores
-      let errorMessage = "Error desconocido";
+       let errorMessage = error.message;
 
-      if (error.message) {
-        errorMessage = error.message;
-      } else if (error.name === "TypeError" && error.message.includes("fetch")) {
-        errorMessage =
-          "No se pudo conectar al servidor. Verifica tu conexión a internet y que el servidor esté corriendo.";
-      } else if (error.name === "NetworkError") {
-        errorMessage = "Error de red. Verifica tu conexión.";
-      }
-
-      console.error("Error en login:", error);
-      dispatch({ type: "SET_ERROR", payload: errorMessage });
+        if (error.message.includes("fetch") || error.message.includes("Network request failed")) {
+            errorMessage = "No se pudo conectar al servidor. Verifica la IP, el Firewall y que el servidor esté corriendo.";
+        }
+        
+        console.error("Error en login:", error);
+        dispatch({ type: "SET_ERROR", payload: errorMessage });
+    } finally {
+        dispatch({ type: "SET_LOADING", payload: false });
     }
-  };
+};
 
   const register = async (name: string, email: string, password: string) => {
     dispatch({ type: "SET_LOADING", payload: true });
     dispatch({ type: "SET_ERROR", payload: null });
 
     try {
-      const res = await fetch("http://localhost:3000/api/auth/register", {
+      const res = await fetch("http://192.168.106.197:3000/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
@@ -222,7 +229,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!data.success) {
         throw new Error(data.message || "Error al registrarse");
       }
-      // Después de registrarse, hacer login automáticamente
       await login(email, password);
     } catch (error: any) {
       dispatch({ type: "SET_ERROR", payload: error.message });

@@ -5,7 +5,7 @@ import { Link } from "expo-router";
 import { Categorias } from "../components/Categorias"
 import { Task } from "../types/TaskType";
 const HomeScreen = () => {
-  const { state: { tasks = [] }, deleteTask } = useTasks();
+  const { state: { tasks = []  },loadTasks, deleteTask } = useTasks();
   const [filterCatId, setFilterCatId] = useState<number | null>(null);
 
   const filteredTasks = tasks.filter((task: Task) =>
@@ -14,10 +14,8 @@ const HomeScreen = () => {
       : Number(task.category?.id) === Number(filterCatId)
   );
   useEffect(() => {
-    console.log('filterCatId →', filterCatId, 'tipo →', typeof filterCatId);
-    console.log('tasks con category →', tasks.filter(t => t.category));
-    console.log('filtradas →', filteredTasks);
-  }, [filterCatId, tasks]);
+  loadTasks();
+  }, [filterCatId]);
 
   return (
     <View className="flex-1 bg-gray-100 p-4" >

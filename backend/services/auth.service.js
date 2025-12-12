@@ -58,7 +58,7 @@ export class AuthService {
         : {
             success: false,
             statusCode: 400,
-            message: "Email o contraseña incorrecta",
+            message: "Contraseña incorrecta",
           };
     } catch (error) {
       return {

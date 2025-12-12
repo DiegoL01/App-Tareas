@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 
 export const BackButton = () => {
   return (
-    <TouchableOpacity  onPress={()=>router.back()}>
+    <TouchableOpacity className='ml-5' onPress={()=>router.back()}>
       <Ionicons name="arrow-back" size={24} color="black" />
     </TouchableOpacity>
   )

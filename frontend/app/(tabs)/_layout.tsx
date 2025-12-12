@@ -5,7 +5,7 @@ import CenterTabButton from "../../src/components/CenterTabButton";
 import { Text , Button, View, ActivityIndicator } from "react-native";
 import { useAuth } from "@/src/hooks/useAuth";
 import { BackButton } from "@/src/components/BackButton";
-
+import { LogOut } from "@/src/components/LogOut";
 
 export default function Layout() {
     const { logout, state: { user: name, token, initializing } } = useAuth();
@@ -23,14 +23,12 @@ export default function Layout() {
         return <Redirect href="/(auth)/Login" />;
     }
 
-    const handleLogout = async () => {
-        await logout();
-    };
+   
     return (
         <Tabs
             screenOptions={(navigation)=>({
-                headerTitle:()=><Text style={{color: "#000", fontWeight: "bold"}}>Hola {name?.name}</Text>,
-                headerRight: () => <Button  title="Cerrar Sesión"  onPress={handleLogout}/>,
+                headerTitle:()=><Text style={{color: "#000", fontWeight: "bold" ,fontSize: 18}}>Hola {name?.name}</Text>,
+                headerRight: () => <LogOut />,
                 headerLeft: () => <BackButton />,
                 headerStyle: {
                     backgroundColor: "#f9fafb",
@@ -60,6 +58,7 @@ export default function Layout() {
         >
             <Tabs.Screen name="Home" options={{
                 title: "Inicio",
+                headerLeft: () => null,
                 tabBarIcon: ({ color, size }) => (
                     <AntDesign name="home" color={color} size={size} />
                 )

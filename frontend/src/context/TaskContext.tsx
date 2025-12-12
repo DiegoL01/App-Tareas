@@ -46,7 +46,7 @@ type TaskContextType = {
   createTask: (task: { title: string; description?: string; category_id?: number }) => Promise<Task | null>;
   updateTask: (id: string, updates: { title?: string; description?: string }) => Promise<boolean>;
   deleteTask: (id: string) => Promise<boolean>;
-  pauseTask: (id: string, duration: number) => Promise<boolean>; 
+  pauseTask: (id: string, duration: number) => Promise<boolean>;
   finishTask: (id: string, duration: number) => Promise<boolean>;
   resumeTask: (id: string) => Promise<boolean>;
   getCategories: () => Promise<Category[]>;
@@ -55,13 +55,13 @@ type TaskContextType = {
   dispatch: React.Dispatch<Action>;
 } | null;
 
-const API_BASE_URL = "http://localhost:3000/api/task";
-const API_CATEGORY_URL = "http://localhost:3000/api/category";
+const API_BASE_URL = "http://192.168.106.197:3000/api/task";
+const API_CATEGORY_URL = "http://192.168.106.197:3000/api/category";
 
 // Mapear del backend al frontend
 const mapBackendToFrontend = (backendTask: BackendTask): Task => {
-  const durationSeconds = typeof backendTask.duration === "string" 
-    ? parseInt(backendTask.duration) || 0 
+  const durationSeconds = typeof backendTask.duration === "string"
+    ? parseInt(backendTask.duration) || 0
     : backendTask.duration || 0;
   const tiempoPausa = durationSeconds * 1000;
 
@@ -74,8 +74,8 @@ const mapBackendToFrontend = (backendTask: BackendTask): Task => {
     tiempoPausa: tiempoPausa > 0 ? tiempoPausa : undefined,
     completed: backendTask.status === "completed",
     lastSessionTime: undefined,
-    category_id: backendTask.category_id,  
-    category: backendTask.category || undefined, 
+    category_id: backendTask.category_id,
+    category: backendTask.category || undefined,
   };
 };
 
@@ -145,24 +145,41 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
       throw new Error("No hay token de autenticación");
     }
 
-    const response = await fetch(`${baseUrl}${endpoint}`, {
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        "token": `${token}`, 
-        ...options.headers,
-      },
-    });
-    if (!response.body && response.ok) {
-      return { result: [] }; 
-    }
-    const data = await response.json();
+    const url = `${baseUrl}${endpoint}`;
 
-    if (!response.ok || !data.statusCode || data.statusCode >= 400) {
-      throw new Error(data.message || "Error en la petición");
-    }
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          "token": `${token}`,
+          ...options.headers,
+        },
+      });
 
-    return data;
+      if (response.status === 204) {
+        return { result: [] };
+      }
+
+      const textData = await response.text();
+      let data;
+      try {
+        data = JSON.parse(textData);
+      } catch (e) {
+        console.error(`Error parseando respuesta de ${url}:`, textData);
+        throw new Error("El servidor devolvió una respuesta no válida (no es JSON).");
+      }
+
+      if (!response.ok || (data.statusCode && data.statusCode >= 400)) {
+        throw new Error(data.message || `Error en la petición: ${response.status}`);
+      }
+
+      return data;
+
+    } catch (error: any) {
+      console.error(`Fallo en petición a: ${url}`, error);
+      throw error;
+    }
   };
 
   // Cargar todas las tareas
@@ -177,7 +194,7 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const data = await apiRequest("", {
         method: "GET",
-        
+
       })
       const tasks = (data.result || []).map(mapBackendToFrontend);
       dispatch({ type: "SET_TASKS", payload: tasks });
@@ -212,6 +229,9 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
 
       const newTask = mapBackendToFrontend(data.result);
       dispatch({ type: "ADD_TASK", payload: newTask });
+
+      loadTasks();
+
       return newTask;
     } catch (error: any) {
       dispatch({ type: "SET_ERROR", payload: error.message });
@@ -233,14 +253,18 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
 
     dispatch({ type: "SET_LOADING", payload: true });
     dispatch({ type: "SET_ERROR", payload: null });
-
+    console.log('updates →', updates);
     try {
       await apiRequest(`/${id}`, {
         method: "PATCH",
         body: JSON.stringify(updates),
       });
-
+      if (updates.title === undefined && updates.description === undefined) {
+        return false;
+      }
+      
       dispatch({ type: "EDIT_TASK", payload: { id, ...updates } });
+      loadTasks();
       return true;
     } catch (error: any) {
       dispatch({ type: "SET_ERROR", payload: error.message });
@@ -266,6 +290,8 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       dispatch({ type: "REMOVE_TASK", payload: id });
+      loadTasks();
+
       return true;
     } catch (error: any) {
       dispatch({ type: "SET_ERROR", payload: error.message });
@@ -275,7 +301,6 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
       dispatch({ type: "SET_LOADING", payload: false });
     }
   };
-
   // Pausar tarea: envía id y duration (en segundos)
   const pauseTask = async (id: string, duration: number): Promise<boolean> => {
     if (!authState.token) {
@@ -286,15 +311,14 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
     dispatch({ type: "SET_ERROR", payload: null });
 
     try {
-      const durationSeconds = Math.floor(duration / 1000); 
+      const durationSeconds = Math.floor(duration / 1000);
       await apiRequest(`/${id}`, {
         method: "PATCH",
         body: JSON.stringify({
-          duration: String(durationSeconds), 
+          duration: String(durationSeconds),
         }),
       });
 
-      // Actualizar el estado local
       dispatch({ type: "UPDATE_TASK_DURATION", payload: { id, duration } });
       return true;
     } catch (error: any) {
@@ -316,7 +340,7 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
     dispatch({ type: "SET_ERROR", payload: null });
 
     try {
-      const durationSeconds = Math.floor(duration / 1000); 
+      const durationSeconds = Math.floor(duration / 1000);
       await apiRequest(`/${id}`, {
         method: "PATCH",
         body: JSON.stringify({
@@ -325,7 +349,6 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
         }),
       });
 
-      // Actualizar el estado local
       dispatch({
         type: "EDIT_TASK",
         payload: {
@@ -353,7 +376,7 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
       return false;
     }
 
-   
+
     dispatch({
       type: "EDIT_TASK",
       payload: {
@@ -422,6 +445,7 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
       // Intentar crear la categoría
       const category = await createCategory(name);
       if (category) {
+        loadTasks();
         return category;
       }
       // Si ya existe, buscar en las categorías existentes
@@ -432,7 +456,6 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
       return existingCategory || null;
     } catch (error: any) {
       console.error("Error al obtener o crear categoría:", error);
-      // Si el error es que ya existe, intentar obtenerla
       if (error.message.includes("ya existe")) {
         const categories = await getCategories();
         const existingCategory = categories.find(
@@ -449,7 +472,6 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
     if (authState.token && authState.user) {
       loadTasks();
     } else {
-      // Limpiar tareas cuando el usuario cierra sesión
       dispatch({ type: "SET_TASKS", payload: [] });
     }
   }, [authState.token, authState.user]);

@@ -8,9 +8,9 @@ type Props = {
   onDone?: () => void;
 };
 
-const EditTask= ({ id, onDone } : Props) => {
-const router = useRouter();
-  const { state, dispatch } = useTasks();
+const EditTask = ({ id, onDone }: Props) => {
+  const router = useRouter();
+  const { state,  updateTask } = useTasks();
   const task = state.tasks.find((t) => t.id === id);
 
   const [title, setTitle] = useState(task?.title ?? "");
@@ -29,14 +29,31 @@ const router = useRouter();
     );
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title.trim()) {
       Alert.alert("Validación", "El título no puede estar vacío");
       return;
     }
 
-    dispatch({ type: "EDIT_TASK", payload: { id, title: title.trim(), description: description.trim() } });
-    if (onDone) onDone();
+    try {
+      const success = await updateTask(id, {
+        title: title.trim(),
+        description: description.trim(),
+      });
+
+      if (success) {
+        // Si la actualización en el backend (y el dispatch local en el contexto) fue exitosa
+        if (onDone) onDone();
+        router.push("/(tabs)/Home");
+      } else {
+        Alert.alert("Error", "No se pudieron guardar los cambios en el servidor.");
+        router.push("/(tabs)/Home");
+
+      }
+    } catch (error) {
+      Alert.alert("Error de Conexión", "Hubo un problema al comunicarse con el servidor.");
+      console.error(error);
+    }
   };
 
   return (
@@ -60,16 +77,16 @@ const router = useRouter();
         <Text className="text-center text-white font-semibold">Guardar cambios</Text>
       </TouchableOpacity>
 
-      
-        <TouchableOpacity
-          onPress={() => {
-            router.push("/(tabs)/Home");
-          }}
-          className="bg-gray-300 py-3 rounded"
-        >
-          <Text className="text-center">Cancelar</Text>
-        </TouchableOpacity>
-      
+
+      <TouchableOpacity
+        onPress={() => {
+          router.push("/(tabs)/Home");
+        }}
+        className="bg-gray-300 py-3 rounded"
+      >
+        <Text className="text-center">Cancelar</Text>
+      </TouchableOpacity>
+
     </View>
   );
 };
