@@ -63,17 +63,19 @@ const mapBackendToFrontend = (backendTask: BackendTask): Task => {
   const durationSeconds = typeof backendTask.duration === "string" 
     ? parseInt(backendTask.duration) || 0 
     : backendTask.duration || 0;
-  const tiempoPausa = durationSeconds * 1000; // convertir segundos a ms
+  const tiempoPausa = durationSeconds * 1000;
 
   return {
     id: String(backendTask.id),
     title: backendTask.title,
     description: backendTask.description || undefined,
-    startTime: null, // No se guarda en el backend, se calcula localmente
-    endTime: null, // No se guarda en el backend
+    startTime: null,
+    endTime: null,
     tiempoPausa: tiempoPausa > 0 ? tiempoPausa : undefined,
     completed: backendTask.status === "completed",
     lastSessionTime: undefined,
+    category_id: backendTask.category_id,  
+    category: backendTask.category || undefined, 
   };
 };
 

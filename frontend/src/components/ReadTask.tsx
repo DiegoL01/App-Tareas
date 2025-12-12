@@ -73,13 +73,11 @@ const ReadTask = ({ id, onDone }: Props) => {
   const elapsedMs = useMemo(() => {
     const baseTime = task?.tiempoPausa ?? 0;
     if (!normalizedStart) return baseTime;
-    // Usar el estado 'now' que se actualiza constantemente
     return baseTime + (now - normalizedStart.getTime());
-  }, [task?.tiempoPausa, normalizedStart, now]); // 'now' fuerza recálculo en cada tick
+  }, [task?.tiempoPausa, normalizedStart, now]); 
 
   const handleStart = async () => {
     if (normalizedStart) return;
-    // Si la tarea está completada, reiniciar desde cero (resetear duration en backend)
     if (isCompleted) {
       await pauseTask(id, 0);
       dispatch({
@@ -168,7 +166,7 @@ const ReadTask = ({ id, onDone }: Props) => {
   const showResume = isPaused;
 
   return (
-    <View className="p-4">
+    <View className="p-4 mt-52">
       {/* Task info */}
       <View className="bg-white rounded p-4 mb-4">
         <Text className="text-xl font-semibold mb-2">{task.title}</Text>

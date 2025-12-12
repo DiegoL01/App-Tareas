@@ -1,4 +1,4 @@
-import { createContext, useReducer, useEffect } from "react";
+import { createContext, useReducer, useEffect, useCallback } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type User = {
@@ -146,7 +146,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // ------------ ASYNC ACTIONS --------------
+  // accione saisncronas para el login y el registro
 
   const login = async (email: string, password: string) => {
     dispatch({ type: "SET_LOADING", payload: true });
@@ -167,9 +167,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const errorData = await res.json();
           errorMessage = errorData.message || errorMessage;
         } catch {
-          // Si no se puede parsear, usar el mensaje por defecto
+          throw new Error("Error al iniciar sesión");
         }
-        throw new Error(errorMessage);
       }
 
       const data = await res.json();
@@ -230,11 +229,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const logout = async () => {
-    // Limpiar AsyncStorage
-    await clearAuthData();
-    dispatch({ type: "LOGOUT" });
-  };
+  const logout = useCallback(async () => {
+    try {
+      await clearAuthData();
+      dispatch({ type: 'LOGOUT' });
+      
+    } catch (error) {
+      console.error('Error durante logout:', error);
+      dispatch({ type: 'LOGOUT' });
+    }
+  }, []);
 
   return (
     <AuthContext.Provider value={{ state, login, register, logout }}>

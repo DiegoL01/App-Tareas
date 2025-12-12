@@ -1,19 +1,32 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
 import { useTasks } from "../context/TaskContext";
 import { Link } from "expo-router";
 import { Categorias } from "../components/Categorias"
+import { Task } from "../types/TaskType";
 const HomeScreen = () => {
-  const { state, deleteTask } = useTasks();
+  const { state: { tasks = [] }, deleteTask } = useTasks();
+  const [filterCatId, setFilterCatId] = useState<number | null>(null);
+
+  const filteredTasks = tasks.filter((task: Task) =>
+    filterCatId === null
+      ? true
+      : Number(task.category?.id) === Number(filterCatId)
+  );
+  useEffect(() => {
+    console.log('filterCatId →', filterCatId, 'tipo →', typeof filterCatId);
+    console.log('tasks con category →', tasks.filter(t => t.category));
+    console.log('filtradas →', filteredTasks);
+  }, [filterCatId, tasks]);
 
   return (
     <View className="flex-1 bg-gray-100 p-4" >
       <View className="mb-5 mt-5">
-        <Categorias />
-      </View>
+      <Categorias onSelect={setFilterCatId} />    
+        </View>
       <Text className="text-xl font-semibold mb-2 border-b-2 border-gray-300 pb-2">Mis tareas</Text>
       <FlatList
-        data={state.tasks}
+        data={filteredTasks}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View className="bg-white p-3 rounded mb-2 flex-row justify-between items-center shadow-slate-950 shadow-1">

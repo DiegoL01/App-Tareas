@@ -40,7 +40,7 @@ const router = useRouter();
   };
 
   return (
-    <View className="p-4">
+    <View className="p-4 mt-52">
       <TextInput
         value={title}
         onChangeText={setTitle}

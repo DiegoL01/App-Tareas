@@ -91,12 +91,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   imageContainer: {
-    flexDirection: 'column', // Alinea los elementos horizontalmente
-    alignItems: 'center', // Centra verticalmente imagen y texto
-    justifyContent: 'flex-start', // Alinea al inicio (puedes cambiarlo a 'center' si quieres centrado)
+    flexDirection: 'column', 
+    alignItems: 'center', 
+    justifyContent: 'flex-start',
     padding: 10,
     marginTop: -60,
-    // marginBottom: 20,
   },
   image: {
     width: 150,

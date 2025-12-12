@@ -8,5 +8,11 @@ export type Task = {
     tiempoPausa?: number;
     completed?: boolean;
     lastSessionTime?: number;
+    category_id?: number | null;
+    category?: {
+        id: number;
+        name: string;
+        color?: string;
+    } | null;
 
 }
