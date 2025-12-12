@@ -70,7 +70,7 @@ export class TaskService {
           },
         ],
       });
-
+console.log(tasks);
       return {
         statusCode: 200,
         message: "Tareas obtenidas exitosamente",

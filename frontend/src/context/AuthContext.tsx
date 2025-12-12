@@ -1,5 +1,6 @@
 import { createContext, useReducer, useEffect, useCallback } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { DOMAIN_URL } from '../config/env';
 
 type User = {
   id: number;
@@ -14,6 +15,8 @@ type AuthState = {
   initializing: boolean; // Para saber si está cargando el token guardado
   error: string | null;
 };
+
+const ApiUrl = `${DOMAIN_URL}/api`;
 
 type Action =
   | { type: "SET_LOADING"; payload: boolean }
@@ -153,11 +156,13 @@ const login = async (email: string, password: string) => {
     dispatch({ type: "SET_ERROR", payload: null });
 
     try {
-        const res = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
-        });
+
+      const res = await fetch(`${ApiUrl}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
 
         if (!res.ok) {
             let errorData;
@@ -218,7 +223,9 @@ const login = async (email: string, password: string) => {
     dispatch({ type: "SET_ERROR", payload: null });
 
     try {
-      const res = await fetch("http://192.168.106.197:3000/api/auth/register", {
+
+      const res = await fetch(`${ApiUrl}/auth/register`, {
+
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
