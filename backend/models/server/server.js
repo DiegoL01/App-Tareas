@@ -12,8 +12,16 @@ export class ServerClass {
   }
 
   ConfigureMiddleware() {
-    this.app.use(express.json()); 
-    this.app.use(cors());
+    this.app.use(express.json());
+    this.app.use(cors({
+      origin: [
+        'http://localhost:8081', // Expo Web
+        'http://localhost:19006', // Expo DevTools
+        'exp://192.168.1.100:19000', // Expo Go con IP
+        /\.exp\.expo\.io$/, // URLs de Expo
+      ]
+    }));
+
   }
 
   ConfigureRoutes() {
@@ -25,7 +33,7 @@ export class ServerClass {
   }
 
   start() {
-    this.app.listen(this.port,'0.0.0.0',() => {
+    this.app.listen(this.port, '0.0.0.0', () => {
       console.log(`Servidor corriendo en http://localhost:${this.port}`);
     });
   }

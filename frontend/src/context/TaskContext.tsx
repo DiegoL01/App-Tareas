@@ -1,6 +1,7 @@
 import { createContext, useContext, useReducer, useEffect } from "react";
 import { type Task } from "./../types/TaskType";
 import { useAuth } from "../hooks/useAuth";
+import { DOMAIN_URL } from "../config/env";
 
 type BackendTask = {
   id: number;
@@ -55,8 +56,8 @@ type TaskContextType = {
   dispatch: React.Dispatch<Action>;
 } | null;
 
-const API_BASE_URL = "http://localhost:3000/api/task";
-const API_CATEGORY_URL = "http://localhost:3000/api/category";
+const API_BASE_URL = `${DOMAIN_URL}/api/task`;
+const API_CATEGORY_URL = `${DOMAIN_URL}/api/category`;
 
 // Mapear del backend al frontend
 const mapBackendToFrontend = (backendTask: BackendTask): Task => {
@@ -144,7 +145,7 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
     if (!token) {
       throw new Error("No hay token de autenticación");
     }
-
+console.log("Haciendo petición a:", `${baseUrl}${endpoint}`);
     const response = await fetch(`${baseUrl}${endpoint}`, {
       ...options,
       headers: {
@@ -177,8 +178,8 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const data = await apiRequest("", {
         method: "GET",
-        
       })
+      console.log("Datos de tareas recibidos:", data);
       const tasks = (data.result || []).map(mapBackendToFrontend);
       dispatch({ type: "SET_TASKS", payload: tasks });
     } catch (error: any) {
