@@ -66,7 +66,7 @@ export class TaskService {
         include: [
           {
             association: "category",
-            attributes: ["id", "name", "color"],
+            attributes: ["id", "name"],
           },
         ],
       });
