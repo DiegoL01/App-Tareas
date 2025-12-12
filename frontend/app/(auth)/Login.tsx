@@ -1,19 +1,33 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Button, ActivityIndicator, StyleSheet , Image} from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TextInput, Button, ActivityIndicator, StyleSheet , Image, Alert} from "react-native";
 import { useAuth } from "../../src/hooks/useAuth";
 import {useRouter} from "expo-router";
 
 
 const Login = () => {
-  const { login, state: { loading, error } } = useAuth();
+  const { login, state: { loading, error, user } } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = async () => {
-    if (!email || !password) return alert("Rellena todos los campos");
+  // Redirigir automáticamente cuando el usuario se autentica
+  useEffect(() => {
+    if (user) {
+      router.replace("/(tabs)/Home");
+    }
+  }, [user]);
 
-    await login(email, password);
+  const handleSubmit = async () => {
+    if (!email || !password) {
+      return alert("Rellena todos los campos");
+    }
+
+    try {
+      await login(email, password);
+      // La redirección se maneja automáticamente por el AuthLayout
+    } catch (err) {
+      console.error("Error en handleSubmit:", err);
+    }
   };
 
   return (
@@ -39,7 +53,11 @@ const Login = () => {
         style={styles.input}
       />
 
-      {error && <Text style={styles.error}>{error}</Text>}
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.error}>{error}</Text>
+        </View>
+      )}
 
       {loading ? (
         <ActivityIndicator size="large" />
@@ -76,10 +94,18 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     fontSize: 16,
   },
+  errorContainer: {
+    backgroundColor: "#fee",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#fcc",
+  },
   error: {
     color: "red",
     textAlign: "center",
-    marginBottom: 10,
+    fontSize: 14,
   },
   imageContainer: {
     flexDirection: 'column', // Alinea los elementos horizontalmente

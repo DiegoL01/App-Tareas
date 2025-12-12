@@ -1,19 +1,36 @@
 import React from "react";
-import { Tabs } from "expo-router";
+import { Tabs, Redirect } from "expo-router";
 import { Ionicons, AntDesign } from '@expo/vector-icons';
 import CenterTabButton from "../../src/components/CenterTabButton";
-import { Text , Button } from "react-native";
+import { Text , Button, View, ActivityIndicator } from "react-native";
 import { useAuth } from "@/src/hooks/useAuth";
 import { BackButton } from "@/src/components/BackButton";
 
 
 export default function Layout() {
-    const { logout,state:{user:name} } = useAuth();
+    const { logout, state: { user: name, token, initializing } } = useAuth();
+
+    // Proteger las rutas: si no hay token o usuario, redirigir a login
+    if (initializing) {
+        return (
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                <ActivityIndicator size="large" />
+            </View>
+        );
+    }
+
+    if (!token || !name) {
+        return <Redirect href="/(auth)/Login" />;
+    }
+
+    const handleLogout = async () => {
+        await logout();
+    };
     return (
         <Tabs
             screenOptions={(navigation)=>({
                 headerTitle:()=><Text style={{color: "#000", fontWeight: "bold"}}>Hola {name?.name}</Text>,
-                headerRight: () => <Button  title="Cerrar Sesión"  onPress={logout}/>,
+                headerRight: () => <Button  title="Cerrar Sesión"  onPress={handleLogout}/>,
                 headerLeft: () => <BackButton />,
                 headerStyle: {
                     backgroundColor: "#f9fafb",

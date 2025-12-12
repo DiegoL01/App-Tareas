@@ -17,7 +17,7 @@ function formatDuration(ms: number) {
 }
 
 const ReadTask = ({ id, onDone }: Props) => {
-  const { state: { tasks }, dispatch } = useTasks();
+  const { state: { tasks }, pauseTask, finishTask, resumeTask, updateTask, dispatch } = useTasks();
   const router = useRouter();
   const task = tasks.find((t) => t.id === id);
 
@@ -77,24 +77,32 @@ const ReadTask = ({ id, onDone }: Props) => {
     return baseTime + (now - normalizedStart.getTime());
   }, [task?.tiempoPausa, normalizedStart, now]); // 'now' fuerza recálculo en cada tick
 
-  const handleStart = () => {
+  const handleStart = async () => {
     if (normalizedStart) return;
-    dispatch({ 
-      type: "EDIT_TASK", 
-      payload: { 
-        id, 
-        startTime: new Date(), 
-        endTime: undefined, 
-        completed: false,
-        tiempoPausa: isCompleted ? 0 : (task?.tiempoPausa ?? 0),
-      } 
-    });
+    // Si la tarea está completada, reiniciar desde cero (resetear duration en backend)
+    if (isCompleted) {
+      await pauseTask(id, 0);
+      dispatch({
+        type: "EDIT_TASK",
+        payload: {
+          id,
+          startTime: new Date(),
+          endTime: undefined,
+          tiempoPausa: 0,
+          completed: false,
+        },
+      });
+    } else {
+      // Si no está completada, reanudar (usa tiempoPausa si existe)
+      await resumeTask(id);
+    }
   };
 
-  const handlePause = () => {
+  const handlePause = async () => {
     if (!normalizedStart) return;
     const added = Date.now() - normalizedStart.getTime();
     const newElapsed = (task?.tiempoPausa ?? 0) + added;
+    // Actualizar localmente primero para UI responsiva
     dispatch({ 
       type: "EDIT_TASK", 
       payload: { 
@@ -105,23 +113,21 @@ const ReadTask = ({ id, onDone }: Props) => {
         completed: false 
       } 
     });
+    // Enviar al backend
+    await pauseTask(id, newElapsed);
   };
 
-  const handleResume = () => {
+  const handleResume = async () => {
     if (normalizedStart) return;
-    dispatch({ 
-      type: "EDIT_TASK", 
-      payload: { 
-        id, 
-        startTime: new Date(), 
-        endTime: undefined, 
-        completed: false 
-      } 
-    });
+    // Reanudar: si tiene tiempoPausa, continúa desde ahí; si no, empieza desde cero
+    await resumeTask(id);
   };
 
-  const handleRestart = () => {
+  const handleRestart = async () => {
     if (!isCompleted) return;
+    // Reiniciar desde cero: resetear duration en el backend
+    await pauseTask(id, 0);
+    // Actualizar estado local
     dispatch({ 
       type: "EDIT_TASK", 
       payload: { 
@@ -134,12 +140,13 @@ const ReadTask = ({ id, onDone }: Props) => {
     });
   };
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
     const nowDate = new Date();
     let finalTime = task?.tiempoPausa ?? 0;
     if (normalizedStart) {
       finalTime += nowDate.getTime() - normalizedStart.getTime();
     }
+    // Actualizar localmente primero
     dispatch({ 
       type: "EDIT_TASK", 
       payload: { 
@@ -151,6 +158,8 @@ const ReadTask = ({ id, onDone }: Props) => {
         lastSessionTime: finalTime
       } 
     });
+    // Enviar al backend
+    await finishTask(id, finalTime);
     router.push("/(tabs)/Home");
   };
 

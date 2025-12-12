@@ -6,7 +6,12 @@ export class CategoryService {
       const { name } = req.body;
       const userId = req.userId;
 
-      const category = await Category.findOne({ where: { name: name } });
+      const category = await Category.findOne({ 
+        where: { 
+          name: name.toUpperCase(),
+          user_id: userId 
+        } 
+      });
 
       if (category) {
         return {
@@ -29,6 +34,31 @@ export class CategoryService {
       return {
         statusCode: 500,
         message: "No se pudo agregar la categoria",
+        error: error.message,
+      };
+    }
+  }
+
+  async getCategoriesAllService(req) {
+    try {
+      const userId = req.userId;
+
+      const categories = await Category.findAll({
+        where: {
+          user_id: userId,
+        },
+        order: [["name", "ASC"]],
+      });
+
+      return {
+        statusCode: 200,
+        message: "Categorías obtenidas exitosamente",
+        result: categories,
+      };
+    } catch (error) {
+      return {
+        statusCode: 500,
+        message: "Error al obtener las categorías",
         error: error.message,
       };
     }

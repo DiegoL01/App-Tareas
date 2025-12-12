@@ -9,6 +9,11 @@ export class CategoryControllers {
         return res.status(response.statusCode).json(response)
     }
 
+    async getCategoriesAllController (req, res) {
+        const response = await this.categoryService.getCategoriesAllService(req);
+        return res.status(response.statusCode).json(response)
+    }
+
     async deleteCategoryController (req, res) {
         const response = await this.categoryService.deleteCategoryService(req);
         return res.status(response.statusCode).json(response)

@@ -4,7 +4,7 @@ import { useTasks } from "../context/TaskContext";
 import { Link } from "expo-router";
 import { Categorias } from "../components/Categorias"
 const HomeScreen = () => {
-  const { state, dispatch } = useTasks();
+  const { state, deleteTask } = useTasks();
 
   return (
     <View className="flex-1 bg-gray-100 p-4" >
@@ -26,7 +26,7 @@ const HomeScreen = () => {
               </View>
             </Link>
             <TouchableOpacity
-              onPress={() => dispatch({ type: "REMOVE_TASK", payload: item.id })}
+              onPress={() => deleteTask(item.id)}
               className="bg-red-500 px-3 py-1 rounded"
             >
               <Text className="text-white">Eliminar</Text>
